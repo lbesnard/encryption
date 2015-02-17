@@ -1,5 +1,5 @@
 # Encryption
-large file asymmetric symmetric encryption using openssl and PEM public/private key
+Bash script using the hybrid(asymmetric symmetric) encryption approach for large files. This uses PEM public/private keys which can be converted from id_rsa
 
 Put both decrypt.sh and encrypt.sh in your path
 ## Encrypt a file with someone's public key 

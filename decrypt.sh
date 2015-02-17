@@ -1,0 +1,93 @@
+#!/bin/bash
+usage=" $(basename "$0") [-h] [-in] \e[4mFileToDecrypt \e[24m  [-inkey] \e[4mPEM_PrivatekeyLocation \e[24m
+
+ Decrypt a large file using assymetric symetrical encryption. The 128 key files
+ are decrypted using the user's private pem key. The decrypted key files are then
+ used to decrypt the main encrypted file.
+
+ Parameters
+ -in   | --file-in     : file to decrypt (tar file containing keys and main file)
+ -inkey| --private-key:  (optional)location of the pem key to use.
+                         By default   $HOME/.ssh/id_rsa.pem
+
+ Usage
+ ./decrypt.sh -in fileToDecrypt
+ ./decrypt.sh -in fileToDecrypt  -inkey ~/.ssh/id_rsa.pub.pem
+
+ References:
+ Ref1 http://www.czeskis.com/random/openssl-encrypt-file.html
+ Ref2 http://bikulov.org/blog/2013/10/12/hybrid-symmetric-asymmetric-encryption-for-large-files/
+
+ Will generate an error if the key is not a public PEM key
+"
+
+# default private key location value
+privkey=$HOME/.ssh/id_rsa.pem
+
+
+#Handle positional parameters
+while :
+do
+    case "$1" in
+
+        -in | --file-in)
+                  shift
+                  file="$1"
+                  ;;
+
+        -inkey | --private-key)
+                  shift
+                  privkey="$1"
+                  ;;
+
+        -h | --help)
+                  echo -e "$usage"
+                  exit
+                  ;;
+
+        -*  | ?*)
+                  echo "Error: Unknown option: $1" >&2
+                  echo "Try 'decrypt --help' for more information."
+                  exit 1
+                  ;;
+
+
+        *)        # No more options
+                  break
+                  ;;
+    esac
+    shift
+done
+
+set -e
+
+if [ ! -f $privkey ]; then
+    printf '%s\n' 'privkey key in pem format not found! Please create one\n' >&2
+    #echo "Private key in pem format not found! Cant' decrypt"
+    exit 1
+fi
+
+
+# extract tar containing encrypted file and encrypted keys
+tar -xf ${file}
+
+passfile1=*_passfile1.ssl
+passfile2=*_passfile2.ssl
+
+encrytpedMainFile=`find . -type f -iname "*.ssl" | sort -nr | head -1`
+
+# decrypt key files with the user private key
+openssl rsautl -decrypt -inkey $privkey -in $passfile1 -out key1.bin
+openssl rsautl -decrypt -inkey $privkey -in $passfile2 -out key2.bin
+cat key1.bin key2.bin  >> key.bin
+
+# decrypt the main file with the decrypted symmetrical keys
+openssl enc -d -aes-256-cbc -in $encrytpedMainFile -out ${encrytpedMainFile::-4} -pass file:./key.bin
+
+
+echo 'Decrypted file created ' `readlink -f ${encrytpedMainFile::-4}`  >&1
+
+# clean
+rm $passfile1 $passfile2 key1.bin key2.bin key.bin $encrytpedMainFile;
+
+exit 0

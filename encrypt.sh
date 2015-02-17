@@ -17,6 +17,7 @@ usage=" $(basename "$0") [-h] [-in] \e[4mFileToEncrypt\e[24m [-out] \e[4mEncrypt
                          By default  $HOME/.ssh/id_rsa.pub.pem
 
  Usage
+ ./encrypt.sh fileToEncrypt
  ./encrypt.sh -in fileToEncrypt
  ./encrypt.sh -in fileToEncrypt  -out toto.tar
  ./encrypt.sh -in fileToEncrypt  -inkey ~/.ssh/id_rsa.pub.pem
@@ -36,8 +37,12 @@ while :
 do
     case "$1" in
 
-        -in | --file-in)
+        -in | --file-in )
                   shift
+                  file="$1"
+                  ;;
+
+         [A-Za-z0-9]* )
                   file="$1"
                   ;;
 
@@ -55,7 +60,7 @@ do
                   echo -e "$usage"
                   exit
                   ;;
-        -* | ?*)
+        -* )
                   echo "Error: Unknown option: $1" >&2
                   echo "Try 'encrypt --help' for more information."
                   exit 1

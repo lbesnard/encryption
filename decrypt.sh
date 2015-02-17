@@ -11,6 +11,7 @@ usage=" $(basename "$0") [-h] [-in] \e[4mFileToDecrypt \e[24m  [-inkey] \e[4mPEM
                          By default   $HOME/.ssh/id_rsa.pem
 
  Usage
+ ./decrypt.sh fileToDecrypt
  ./decrypt.sh -in fileToDecrypt
  ./decrypt.sh -in fileToDecrypt  -inkey ~/.ssh/id_rsa.pub.pem
 
@@ -29,9 +30,12 @@ privkey=$HOME/.ssh/id_rsa.pem
 while :
 do
     case "$1" in
-
         -in | --file-in)
                   shift
+                  file="$1"
+                  ;;
+
+          [A-Za-z0-9]* )
                   file="$1"
                   ;;
 
@@ -45,7 +49,7 @@ do
                   exit
                   ;;
 
-        -*  | ?*)
+        -* )
                   echo "Error: Unknown option: $1" >&2
                   echo "Try 'decrypt --help' for more information."
                   exit 1

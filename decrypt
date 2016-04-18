@@ -75,8 +75,8 @@ fi
 # extract tar containing encrypted file and encrypted keys
 tar -xf ${file}
 
-passfile1=*_passfile1.ssl
-passfile2=*_passfile2.ssl
+passfile1=`find . -type f -name '*passfile1.ssl'`
+passfile2=`find . -type f -name '*passfile2.ssl'`
 
 encrytpedMainFile=`find . -type f -iname "*.ssl" | sort -nr | head -1`
 
